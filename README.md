@@ -3,7 +3,7 @@
 # MovieBuddy 
 
 
-#### Video Demo: 
+#### Video Demo: [Watch the Demo](https://www.youtube.com/watch?v=C2NAS-Sd4AQ)
 
 #### Description:
 **MovieBuddy** is an interactive movie and TV series discovery platform where users can filter and explore content based on their preferences, such as genre, release year, and type (movie or TV series). By selecting the genre, year, and type, users are presented with relevant suggestions, and they can even view a detailed overview of a movie or show, including its cast, rating, and trailer link. The main feature of the project is the ability to swap the main movie or TV show with any of the suggested ones by clicking on them, creating an engaging and dynamic experience.
