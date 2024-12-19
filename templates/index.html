@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> MovieBuddy - I select the movie, you enjoy it</title>
+    <link rel="stylesheet" href="/static/css/style.css"><!-- Linked to style.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <img src="/static/images/logo.png" alt="MovieBuddy Logo" class="logo-img">
+                MovieBuddy
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <form method="POST" class="filter-container">
+            <select name="genre" id="genre">
+                <option value="">All Genres</option>
+                {% for genre in genres %}
+                    <option value="{{ genre }}" {% if genre == request.form.get('genre') %}selected{% endif %}>{{ genre }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="year" id="year">
+                <option value="">All Years</option>
+                {% for y in years %}
+                    <option value="{{ y }}" {% if y|string == request.form.get('year') %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="type" id="type">
+                <option value="movie" {% if request.form.get('type') == 'movie' %}selected{% endif %}>Movies</option>
+                <option value="series" {% if request.form.get('type') == 'series' %}selected{% endif %}>TV Series</option>
+            </select>
+
+            <button type="submit">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+
+        {% if movie %}
+            <div class="main-movie" id="main-movie-container">
+                <img class="movie-poster" id="main-poster" src="https://image.tmdb.org/t/p/w500{{ movie['poster_path'] }}" alt="Movie Poster">
+                <div class="movie-details">
+                    <h2 class="movie-title" id="main-title">{{ movie['title'] if movie_type == 'movie' else movie['name'] }}</h2>
+
+                    {% if movie['genre_names'] %}
+                        <div class="genre-tags">
+                            {% for genre in movie['genre_names'] %}
+                                <span class="genre-tag">{{ genre }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <p class="movie-info" id="main-overview">{{ movie['overview'] }}</p>
+                    <p class="movie-info" id="main-year">Release Year: {{ movie['release_date'][:4] if movie_type == 'movie' else movie['first_air_date'][:4] }}</p>
+                    <p class="movie-info" id="main-rating">Rating: {{ movie['vote_average'] }}/10</p>
+
+                    {% if movie['trailer_url'] %}
+                        <a href="{{ movie['trailer_url'] }}" class="trailer-button" target="_blank">
+                            <i class="fas fa-play"></i> Watch Trailer
+                        </a>
+                    {% endif %}
+
+                    {% if actors %}
+                        <div class="actors-list">
+                            <h3>Cast:</h3>
+                            <ul>
+                                {% for actor in actors %}
+                                    <li>{{ actor }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="movie-suggestions" id="suggestions-container">
+                {% for suggestion in movies %}
+                    <div class="movie-suggestion"
+                         data-id="{{ suggestion['id'] }}"
+                         data-poster="{{ suggestion['poster_path'] }}"
+                         data-title="{{ suggestion['title'] if movie_type == 'movie' else suggestion['name'] }}"
+                         data-overview="{{ suggestion['overview'] }}"
+                         data-year="{{ suggestion['release_date'][:4] if movie_type == 'movie' else suggestion['first_air_date'][:4] }}"
+                         data-rating="{{ suggestion['vote_average'] }}"
+                         onclick="swapMovies(this)">
+                        <img class="suggested-poster" src="https://image.tmdb.org/t/p/w500{{ suggestion['poster_path'] }}" alt="Movie Poster">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 MovieBuddy. All rights reserved.</p>
+            <p>Made with ❤️ by <a href="https://github.com/MedinaBytes" target="_blank">Jonathan Medina as CS50 Final Project</a></p>
+        </div>
+    </footer>
+
+    <script>
+        function swapMovies(suggestionElement) {
+            // Get main movie current data
+            const mainPoster = document.getElementById('main-poster');
+            const mainTitle = document.getElementById('main-title');
+            const mainOverview = document.getElementById('main-overview');
+            const mainYear = document.getElementById('main-year');
+            const mainRating = document.getElementById('main-rating');
+
+            // Store main movie's current data
+            const mainData = {
+                id: mainPoster.getAttribute('data-id'),
+                poster: mainPoster.src.split('/w500')[1],
+                title: mainTitle.textContent,
+                overview: mainOverview.textContent,
+                year: mainYear.textContent.replace('Release Year: ', ''),
+                rating: mainRating.textContent.replace('Rating: ', '').replace('/10', '')
+            };
+
+            // Get clicked suggestion data
+            const suggestionData = {
+                id: suggestionElement.getAttribute('data-id'),
+                poster: suggestionElement.getAttribute('data-poster'),
+                title: suggestionElement.getAttribute('data-title'),
+                overview: suggestionElement.getAttribute('data-overview'),
+                year: suggestionElement.getAttribute('data-year'),
+                rating: suggestionElement.getAttribute('data-rating')
+            };
+
+            // Update main movie with suggestion data
+            mainPoster.src = `https://image.tmdb.org/t/p/w500${suggestionData.poster}`;
+            mainPoster.setAttribute('data-id', suggestionData.id);
+            mainTitle.textContent = suggestionData.title;
+            mainOverview.textContent = suggestionData.overview;
+            mainYear.textContent = `Release Year: ${suggestionData.year}`;
+            mainRating.textContent = `Rating: ${suggestionData.rating}/10`;
+
+            // Update suggestion with main movie data
+            const suggestionImg = suggestionElement.querySelector('.suggested-poster');
+            suggestionImg.src = `https://image.tmdb.org/t/p/w500${mainData.poster}`;
+            suggestionElement.setAttribute('data-id', mainData.id);
+            suggestionElement.setAttribute('data-poster', mainData.poster);
+            suggestionElement.setAttribute('data-title', mainData.title);
+            suggestionElement.setAttribute('data-overview', mainData.overview);
+            suggestionElement.setAttribute('data-year', mainData.year);
+            suggestionElement.setAttribute('data-rating', mainData.rating);
+        }
+    </script>
+</body>
+</html>
