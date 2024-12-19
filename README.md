@@ -1,4 +1,7 @@
-# MovieBuddy
+<img src="https://github.com/MedinaBytes/MovieBuddy---CS50-Final-Project/blob/main/static/images/logo.png?raw=true" alt="Logo" width="150"/>
+
+# MovieBuddy 
+
 
 #### Video Demo: 
 
